@@ -1,6 +1,6 @@
 '''
 Script Name: Import Mocha Track
-Script Version: 0.1.0
+Script Version: 0.1.1
 Flame Version: 2023
 Written by: Andrew Miller
 Creation Date: 7.21.23
@@ -32,14 +32,14 @@ To install:
 # ----------------------------- #
 
 import os, shutil
-from pyflame_lib_import_mocha_track import pyflame_print, pyflame_file_browser
+from pyflame_lib_import_mocha_track import PyFlameFunctions
 
 #         Main Script           #
 # ----------------------------- #
 
 SCRIPT_NAME = 'Import Mocha Track'
 SCRIPT_PATH = '/opt/Autodesk/shared/python/import_mocha_track'
-VERSION = 'v1.0'
+VERSION = 'v0.1.1'
 
 class MochaTrack():
     def __init__(self):
@@ -156,7 +156,7 @@ class MochaTrack():
 
         self.remove_temp_folder()
 
-        pyflame_print(SCRIPT_NAME, f'Perspective Grid "{self.track_name}" loaded')
+        PyFlameFunctions.message_print(f'Perspective Grid "{self.track_name}" loaded', SCRIPT_NAME)
         
     def import_bilinear_uvs(self) :
         import flame
@@ -338,9 +338,9 @@ class MochaTrack():
 
         self.remove_temp_folder()
 
-        pyflame_print(SCRIPT_NAME, f'Surface UVs Loaded: "{self.track_name}"')
+        PyFlameFunctions.message_print(f'Surface UVs Loaded "{self.track_name}" loaded', SCRIPT_NAME)
 
-    def key_frame(self, index, frame, value, value_lock=False, curve_order='constant') :
+    def key_frame(self, index, frame, value, value_lock=False, curve_order='linear') :
         # Creates a list of all setup lines to write out for a key frame based on supplied values
 
         kf_lines = [
@@ -523,7 +523,7 @@ class MochaTrack():
 
         return attachment_lines
         
-    def add_animation(self, node_name, setup, channel, animation, value_lock=False, extrapolation='linear', curve_order='constant', value_index=0) :
+    def add_animation(self, node_name, setup, channel, animation, value_lock=False, extrapolation='linear', curve_order='linear', value_index=0) :
         # Adds an animation curve to the passed channel in the setup list
         # node_name: name of the action/gmask tracer node to animate
         # setup: list of setup file contents by line
@@ -554,7 +554,7 @@ class MochaTrack():
         import re
 
         #creates browser to select .ascii mocha track files
-        browser = pyflame_file_browser(
+        browser = PyFlameFunctions.file_browser(
             title = 'Select Four Mocha Tracker Files', 
             extension = ['ascii'],
             multi_selection = True,
@@ -564,7 +564,7 @@ class MochaTrack():
 
         # throw exception if browser doesn't return 4 files
         if len(selected_files) != 4 :
-            pyflame_print(SCRIPT_NAME, 'Exactly four tracker files must be selected.')
+            PyFlameFunctions.message_print('Exactly four tracker files must be selected.', SCRIPT_NAME)
             raise ValueError('Exactly four tracker files must be selected.')
 
         tracker_file_names = []
@@ -589,7 +589,7 @@ class MochaTrack():
 
                 error_msg = f'This file doesn\'t look like a Mocha Track: {file}'
 
-                pyflame_print(SCRIPT_NAME, error_msg)
+                PyFlameFunctions.message_print(error_msg, SCRIPT_NAME)
                 raise TypeError(error_msg)
             
             else :
@@ -604,7 +604,7 @@ class MochaTrack():
 
                     name_error = f'Selected trackers have different names: {repr(set(mocha_names))}'
 
-                    pyflame_print(SCRIPT_NAME, name_error)
+                    PyFlameFunctions.message_print(name_error, SCRIPT_NAME)
                     raise ValueError(name_error)
                 else : 
                     self.track_name = mocha_names[0]
