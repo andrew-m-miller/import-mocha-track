@@ -32,19 +32,17 @@ To install:
 # ----------------------------- #
 
 import os, shutil
-from pyflame_lib_import_mocha_track import PyFlameFunctions
+import flame
 
 #         Main Script           #
 # ----------------------------- #
 
 SCRIPT_NAME = 'Import Mocha Track'
 SCRIPT_PATH = '/opt/Autodesk/shared/python/import_mocha_track'
-VERSION = 'v0.1.1'
+VERSION = 'v0.1.2'
 
 class MochaTrack():
     def __init__(self):
-        import flame
-
         # Get host node
 
         self.host_node = flame.batch.current_node.get_value()
@@ -80,9 +78,7 @@ class MochaTrack():
         self.upper_right = []
         self.corners = {}
 
-    def import_perspective_grid(self) :
-        import flame
-        
+    def import_perspective_grid(self) :      
         pen = self.host_node.cursor_position
 
         # Read in mocha track
@@ -156,11 +152,9 @@ class MochaTrack():
 
         self.remove_temp_folder()
 
-        PyFlameFunctions.message_print(f'Perspective Grid "{self.track_name}" loaded', SCRIPT_NAME)
+        flame.messages.show_in_console(f"Perspective Grid '{self.track_name}' loaded", duration = 5)
         
-    def import_bilinear_uvs(self) :
-        import flame
-        
+    def import_bilinear_uvs(self) :     
         pen = self.host_node.cursor_position 
 
         # Read in mocha track
@@ -338,7 +332,7 @@ class MochaTrack():
 
         self.remove_temp_folder()
 
-        PyFlameFunctions.message_print(f'Surface UVs Loaded "{self.track_name}" loaded', SCRIPT_NAME)
+        flame.messages.show_in_console(f"Surface UVs Loaded '{self.track_name}' loaded", duration = 5)
 
     def key_frame(self, index, frame, value, value_lock=False, curve_order='linear') :
         # Creates a list of all setup lines to write out for a key frame based on supplied values
@@ -369,7 +363,6 @@ class MochaTrack():
             return [(p[0], p[2]) for p in corner]
 
     def add_tracker(self, tracker, corner, width, height) :
-
         #Creates all lines for a tracker attachment (stabilizer setup)
 
         ref_frame = corner[0][0]
@@ -554,17 +547,16 @@ class MochaTrack():
         import re
 
         #creates browser to select .ascii mocha track files
-        browser = PyFlameFunctions.file_browser(
-            title = 'Select Four Mocha Tracker Files', 
-            extension = ['ascii'],
-            multi_selection = True,
-            )
+        flame.browser.show(default_path='/data', 
+                           extension='ascii', 
+                           multi_selection=True,
+                           title='Select Four Mocha Tracker Files')
         
-        selected_files = browser
+        selected_files = flame.browser.selection
 
         # throw exception if browser doesn't return 4 files
         if len(selected_files) != 4 :
-            PyFlameFunctions.message_print('Exactly four tracker files must be selected.', SCRIPT_NAME)
+            flame.messages.show_in_console('Exactly four tracker files must be selected.', type='error', duration=5)
             raise ValueError('Exactly four tracker files must be selected.')
 
         tracker_file_names = []
@@ -589,7 +581,7 @@ class MochaTrack():
 
                 error_msg = f'This file doesn\'t look like a Mocha Track: {file}'
 
-                PyFlameFunctions.message_print(error_msg, SCRIPT_NAME)
+                flame.messages.show_in_console(error_msg, type='error', duration=5)
                 raise TypeError(error_msg)
             
             else :
@@ -604,7 +596,7 @@ class MochaTrack():
 
                     name_error = f'Selected trackers have different names: {repr(set(mocha_names))}'
 
-                    PyFlameFunctions.message_print(name_error, SCRIPT_NAME)
+                    flame.messages.show_in_console(name_error, type='error', duration=5)
                     raise ValueError(name_error)
                 else : 
                     self.track_name = mocha_names[0]
@@ -670,8 +662,6 @@ class MochaTrack():
         # Checks to see if any nodes already have the same name as our Mocha track
         # based on the method name_axis() from Michael Vaglienty's Invert Axis script
 
-        import flame
-
         existing_nodes = [node.name.get_value() for node in self.host_node.nodes]
 
         if name not in existing_nodes:
@@ -684,8 +674,6 @@ class MochaTrack():
     # Following methods were all lifted from Michael Vaglienty's Invert Axis script
 
     def save_selected_node(self):
-        import flame
-
         # Create temp save dir
 
         try:
@@ -699,13 +687,11 @@ class MochaTrack():
         self.host_node.save_node_setup(self.save_node_path)
 
     def reload_selected_node(self):
-
         # Reload node setup
 
         self.host_node.load_node_setup(self.save_node_path)
 
     def remove_temp_folder(self):
-
         # Remove temp folder
 
         shutil.rmtree(self.temp_folder)
